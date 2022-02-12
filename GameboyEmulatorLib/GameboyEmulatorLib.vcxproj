@@ -20,11 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\framework.h" />
+    <ClInclude Include="Headers\gbl\gbl.h" />
     <ClInclude Include="Headers\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Headers\pch.cpp" />
-    <ClCompile Include="Sources\GameboyEmulatorLib.cpp" />
+    <ClCompile Include="Sources\gbl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

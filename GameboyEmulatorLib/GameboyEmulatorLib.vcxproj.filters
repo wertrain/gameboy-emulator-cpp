@@ -7,6 +7,9 @@
     <Filter Include="Headers">
       <UniqueIdentifier>{105f2fa0-c019-4fc3-9003-ff22a62d6e86}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\gbl">
+      <UniqueIdentifier>{2c99e53a-4319-4f91-8b6f-dacd3409718e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\framework.h">
@@ -15,12 +18,15 @@
     <ClInclude Include="Headers\pch.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\gbl\gbl.h">
+      <Filter>Headers\gbl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Headers\pch.cpp">
       <Filter>Headers</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\GameboyEmulatorLib.cpp">
+    <ClCompile Include="Sources\gbl.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
