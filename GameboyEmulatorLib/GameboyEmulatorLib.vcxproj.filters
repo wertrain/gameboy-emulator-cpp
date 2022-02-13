@@ -10,6 +10,18 @@
     <Filter Include="Headers\gbl">
       <UniqueIdentifier>{2c99e53a-4319-4f91-8b6f-dacd3409718e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\gbl\core">
+      <UniqueIdentifier>{73921108-5ff6-4409-915f-c512699213e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\core">
+      <UniqueIdentifier>{8f22b103-3631-49ae-9761-db0b2b347dd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\gbl\core\cpuop">
+      <UniqueIdentifier>{8812f8f6-41c8-4849-9697-fbb24442d8e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\core\cpuop">
+      <UniqueIdentifier>{160c8098-b3c1-43a9-966e-4077768c3942}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\framework.h">
@@ -21,6 +33,21 @@
     <ClInclude Include="Headers\gbl\gbl.h">
       <Filter>Headers\gbl</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\gbl\core\mmu.h">
+      <Filter>Headers\gbl\core</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\allocator.h">
+      <Filter>Headers\gbl</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\core\cpu.h">
+      <Filter>Headers\gbl\core</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\core\cpuop\cpuop_table.hxx">
+      <Filter>Headers\gbl\core\cpuop</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\core\cpuop\cpuop.h">
+      <Filter>Headers\gbl\core\cpuop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Headers\pch.cpp">
@@ -28,6 +55,15 @@
     </ClCompile>
     <ClCompile Include="Sources\gbl.cpp">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\core\mmu.cpp">
+      <Filter>Sources\core</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\core\cpu.cpp">
+      <Filter>Sources\core</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\core\cpuop\cpuop.cpp">
+      <Filter>Sources\core\cpuop</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

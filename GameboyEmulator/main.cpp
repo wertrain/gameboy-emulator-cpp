@@ -2,6 +2,9 @@
 
 int main()
 {
-    gbl::fnGameboyEmulatorLib();
+    auto* gb = new gbl::GameBoyEmulator();
+    gb->Boot(R"(sample.rom)");
+    gb->Shutdown();
+
     return 0;
 }
