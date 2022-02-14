@@ -51,4 +51,9 @@ void CPU::Reset()
     m_CPU->totalClock = { 0, 0 };
 }
 
+void CPU::InstructionInc8(uint8_t* reg)
+{
+
+}
+
 } // namespace gbl

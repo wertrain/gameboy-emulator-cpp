@@ -66,6 +66,14 @@ private:
     OpFunc_t;
 
 private:
+    void InstructionInc8(uint8_t* reg);
+    //void InstructionAdd8(cpu_t* cpu, uint8_t* reg, const uint8_t value);
+    //void InstructionAdd16(cpu_t* cpu, uint16_t* reg, const uint16_t value, bool zero);
+    //void InstructionDec8(cpu_t* cpu, uint8_t* reg);
+    //void InstructionSub8(cpu_t* cpu, uint8_t value);
+    //void InstructionADC(cpu_t* cpu, const uint8_t value);
+
+private:
     IGBLAllocator* m_Allocator;
     CPU_t* m_CPU;
     CPUOperator* m_Operator;

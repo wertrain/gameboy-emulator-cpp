@@ -53,13 +53,13 @@ void CPUOperator::Op_03(CPU* cpu, MMU* mmu)
     cpu->m_CPU->registers.bc.word++;
 }
 
-#if 0
 void CPUOperator::Op_04(CPU* cpu, MMU* mmu)
 {
     DebugInstruction(cpu, mmu, "INC B");
-    cpu_ins_inc8(cpu, &cpu->m_CPU->registers.bc.hi);
+    cpu->InstructionInc8(&cpu->m_CPU->registers.bc.hi);
 }
 
+#if 0
 void CPUOperator::Op_05(CPU* cpu, MMU* mmu)
 {
     DebugInstruction(cpu, mmu, "DEC B");
