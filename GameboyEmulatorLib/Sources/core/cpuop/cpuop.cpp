@@ -47,13 +47,13 @@ void CPUOperator::Op_02(CPU* cpu, MMU* mmu)
     mmu->WriteByte(cpu->m_CPU->registers.bc.word, cpu->m_CPU->registers.af.hi);
 }
 
-#if 0
 void CPUOperator::Op_03(CPU* cpu, MMU* mmu)
 {
     DebugInstruction(cpu, mmu, "INC BC");
     cpu->m_CPU->registers.bc.word++;
 }
 
+#if 0
 void CPUOperator::Op_04(CPU* cpu, MMU* mmu)
 {
     DebugInstruction(cpu, mmu, "INC B");
