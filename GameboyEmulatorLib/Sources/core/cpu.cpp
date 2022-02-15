@@ -56,4 +56,9 @@ void CPU::InstructionInc8(uint8_t* reg)
 
 }
 
+void CPU::InstructionDec8(uint8_t* reg)
+{
+
+}
+
 } // namespace gbl
