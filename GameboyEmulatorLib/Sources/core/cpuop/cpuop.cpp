@@ -65,13 +65,13 @@ void CPUOperator::Op_05(CPU* cpu, MMU* mmu)
     cpu->InstructionDec8(&cpu->m_CPU->registers.bc.hi);
 }
 
-#if 0
 void CPUOperator::Op_0c(CPU* cpu, MMU* mmu)
 {
     DebugInstruction(cpu, mmu, "INC C");
-    cpu_ins_inc8(cpu, &cpu->m_CPU->registers.bc.lo);
+    cpu->InstructionInc8(&cpu->m_CPU->registers.bc.lo);
 }
 
+#if 0
 void CPUOperator::Op_06(CPU* cpu, MMU* mmu)
 {
     uint8_t byte = mmu_read_byte(mmu, cpu->m_CPU->registers.pc.word);
