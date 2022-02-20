@@ -65,8 +65,8 @@ bool PPU::Create(MMU* mmu)
     m_PPU->colors[3] = 0xFF000000;
 
     // フレームバッファの初期化
-    m_PPU->canrender = true;
-    ResetFramebuffer();
+    m_PPU->canRender = true;
+    ResetFrameBuffer();
 
     memset(m_PPU->tileset, 0, sizeof(m_PPU->tileset));
     return true;
@@ -82,9 +82,24 @@ void PPU::EnableLCD()
     m_PPU->control->lcdDisplay = true;
 }
 
+bool PPU::CanRender() const
+{
+    return m_PPU->canRender;
+}
+
 uint32_t PPU::GetFrameBuffer(const int32_t x, const int32_t y) const
 {
     return m_PPU->framebuffer[y][x];
+}
+
+void PPU::ResetCanRender()
+{
+    m_PPU->canRender = false;
+}
+
+void PPU::ResetFrameBuffer()
+{
+    memset(m_PPU->framebuffer, 0, BUFFER_HEIGHT * BUFFER_WIDTH * sizeof(uint32_t));
 }
 
 void PPU::Tick(CPU* cpu, MMU* mmu)
@@ -125,7 +140,7 @@ void PPU::Tick(CPU* cpu, MMU* mmu)
             if (m_PPU->line->value == PPU_HLINES)
             {
                 m_PPU->mode = PPU_MODE_VBLANK;
-                m_PPU->canrender = true;
+                m_PPU->canRender = true;
                 (*mmu->GetMMU()->intFlags) |= CPU::CPU_INT_VBLANK;
             }
             else
@@ -216,11 +231,6 @@ void PPU::RenderLine(MMU* mmu)
         const uint32_t color = m_PPU->colors[m_PPU->palette[m_PPU->tileset[tile][y][x % 8]]];
         m_PPU->framebuffer[m_PPU->line->value][x] = color;
     }
-}
-
-void PPU::ResetFramebuffer()
-{
-    memset(m_PPU->framebuffer, 0, BUFFER_HEIGHT * BUFFER_WIDTH * sizeof(uint32_t));
 }
 
 } // namespace gbl

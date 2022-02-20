@@ -51,6 +51,7 @@ CPU::CPU(IGBLAllocator* allocator)
     memset(m_CPU, 0, sizeof(CPU_t));
 
     m_Operator = gbl::New<CPUOperator>(m_Allocator);
+    m_Operator->Initialize();
 }
 
 CPU::~CPU()

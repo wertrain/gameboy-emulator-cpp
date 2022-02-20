@@ -29,7 +29,10 @@ public:
     void Destroy();
 
     void EnableLCD();
+    bool CanRender() const;
     uint32_t GetFrameBuffer(int32_t x, int32_t y) const;
+    void ResetCanRender();
+    void ResetFrameBuffer();
     void Tick(CPU* cpu, MMU* mmu);
 
 private:
@@ -85,7 +88,7 @@ private:
         uint8_t palette[4];
         uint8_t tileset[0x200][8][8];
 
-        bool canrender;
+        bool canRender;
         uint32_t framebuffer[BUFFER_HEIGHT][BUFFER_WIDTH];
 
         uint8_t* vram;
@@ -96,7 +99,6 @@ private:
     void UpdateMemory(MMU* mmu);
     void UpdateTile(uint16_t addr, uint8_t data);
     void RenderLine(MMU* mmu);
-    void ResetFramebuffer();
 
 private:
     IGBLAllocator* m_Allocator;

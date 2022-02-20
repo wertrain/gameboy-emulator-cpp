@@ -40,6 +40,9 @@ MMU::MMU(IGBLAllocator* allocator)
 {
     m_MMU = static_cast<MMU_t*>(m_Allocator->Allocate(sizeof(MMU_t)));
     memset(m_MMU, 0, sizeof(MMU_t));
+
+    m_MMU->joyFlags = m_MMU->address + 0xFF00;
+    m_MMU->intFlags = m_MMU->address + 0xFF0F;
     m_MMU->finishedBIOS = m_MMU->address + 0xFF50;
 }
 
@@ -161,7 +164,7 @@ uint8_t MMU::ReadByte(const uint16_t address)
             }
         }
     }
-    _ASSERT(false);
+    //_ASSERT(false);
     return 0;
 }
 
