@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "gbl/allocator.h"
+#include "gbl/cartridge.h"
 #include "gbl/core/mmu.h"
 
 namespace
@@ -60,6 +61,16 @@ void MMU::LoadBIOS()
 bool MMU::IsFinishedBIOS() const
 {
     return (*m_MMU->finishedBIOS) != 0;
+}
+
+void MMU::LoadCartridge(const Cartridge* cartridge)
+{
+    memcpy(reinterpret_cast<void*>(m_MMU->address), reinterpret_cast<const void*>(cartridge->GetData()), cartridge->GetDataSize());
+}
+
+void MMU::ResetVRAM()
+{
+    memset((void*)(m_MMU->vram), 0, sizeof(m_MMU->vram));
 }
 
 uint8_t MMU::ReadByte(const uint16_t address)
@@ -266,9 +277,11 @@ uint8_t MMU::WriteByte(const uint16_t address, const uint8_t data)
             }
         }
     }
+
+    return 0;
 }
 
-uint8_t MMU::WriteWord(const uint16_t address, const uint8_t data)
+uint8_t MMU::WriteWord(const uint16_t address, const uint16_t data)
 {
     uint8_t r = WriteByte(address, data & 0xFF) & WriteByte(address + 1, data >> 8);
     m_MMU->lastWritten.empty = false;

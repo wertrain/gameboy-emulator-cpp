@@ -3,6 +3,7 @@
 #include <cinttypes>
 
 namespace gbl { class IGBLAllocator; }
+namespace gbl { class Cartridge; }
 
 namespace gbl
 {
@@ -10,23 +11,6 @@ namespace gbl
 class MMU
 {
 public:
-    MMU(IGBLAllocator* allocator);
-    ~MMU();
-
-    void LoadBIOS();
-    bool IsFinishedBIOS() const;
-
-    uint8_t ReadByte(uint16_t address);
-    uint16_t ReadWord(uint16_t address);
-    uint8_t ReadAddress8(uint16_t address);
-    uint16_t ReadAddress16(uint16_t address);
-
-    uint8_t WriteByte(uint16_t address, uint8_t data);
-    uint8_t WriteWord(uint16_t address, uint8_t data);
-    void WriteAddress8(uint16_t address, uint8_t data);
-    void WriteAddress16(uint16_t address, uint16_t data);
-
-private:
     typedef struct MemoryManagementUnit
     {
         uint8_t bios[0x100];
@@ -70,6 +54,27 @@ private:
         lastWritten;
     }
     MMU_t;
+
+public:
+    MMU(IGBLAllocator* allocator);
+    ~MMU();
+
+    void LoadBIOS();
+    bool IsFinishedBIOS() const;
+    void LoadCartridge(const Cartridge* cartridge);
+    void ResetVRAM();
+
+    uint8_t ReadByte(uint16_t address);
+    uint16_t ReadWord(uint16_t address);
+    uint8_t ReadAddress8(uint16_t address);
+    uint16_t ReadAddress16(uint16_t address);
+
+    uint8_t WriteByte(uint16_t address, uint8_t data);
+    uint8_t WriteWord(uint16_t address, uint16_t data);
+    void WriteAddress8(uint16_t address, uint8_t data);
+    void WriteAddress16(uint16_t address, uint16_t data);
+
+    MMU_t* GetMMU() const { return m_MMU; }
 
 private:
     IGBLAllocator* m_Allocator;

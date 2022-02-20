@@ -26,6 +26,9 @@ public:
 
     void Initialize();
 
+    OpFunc_t* GetOperator(uint8_t index);
+    OpFunc_t* GetCbOperator(uint8_t index);
+
 #define OPERATE(MemberName, m, t, b) void MemberName(CPU* cpu, MMU* mmu);
     #include "gbl/core/cpuop/cpuop_table.hxx"
 #undef OPERATE
@@ -39,6 +42,8 @@ private:
     IGBLAllocator* m_Allocator;
     OpFunc_t m_OpTable[0xFF];
     OpFunc_t m_OpCbTable[0xFF];
+
+    friend class CPU;
 };
 
 } // namespace gbl

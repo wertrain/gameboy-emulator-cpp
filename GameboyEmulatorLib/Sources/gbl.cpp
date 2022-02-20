@@ -3,7 +3,10 @@
 
 #include "gbl/allocator.h"
 #include "gbl/core/mmu.h"
+#include "gbl/core/ppu.h"
 #include "gbl/core/cpu.h"
+#include "gbl/cartridge.h"
+#include "gbl/interface.h"
 #include "gbl/gbl.h"
 #include <fstream>
 #include <cstdint>
@@ -36,7 +39,9 @@ namespace gbl
 GameBoyEmulator::GameBoyEmulator(IGBLAllocator* allocator)
     : m_Allocator(allocator)
     , m_MMU(nullptr)
+    , m_PPU(nullptr)
     , m_CPU(nullptr)
+    , m_LCD(nullptr)
 {
 
 }
@@ -54,48 +59,72 @@ GameBoyEmulator::~GameBoyEmulator()
 
 bool GameBoyEmulator::Boot(const char* romFilePath)
 {
-    std::ifstream ifs;
-    std::ios_base::iostate exceptionMask = ifs.exceptions() | std::ios::failbit;
-    ifs.exceptions(exceptionMask);
+    Cartridge cartridge(m_Allocator);
 
-    try
-    {
-        ifs.open(romFilePath, std::ios::in | std::ios::binary);
-    }
-    catch (std::ios_base::failure&)
+    if (!cartridge.Load(romFilePath))
     {
         return false;
     }
 
-    ifs.seekg(0, std::ios::end);
-    const size_t romSize = ifs.tellg();
-    ifs.seekg(0);
-
-    char* data = static_cast<char*>(m_Allocator->Allocate(romSize));
-    ifs.read(data, romSize);
-
-    const bool result = BootFromMemory(data, romSize);
-
-    ifs.close();
-
-    return result;
+    return BootFromCartridge(&cartridge);
 }
 
-bool GameBoyEmulator::BootFromMemory(void* rom, const size_t romSize)
+bool GameBoyEmulator::BootFromCartridge(const Cartridge* cartridge)
 {
     gbl::Delete<MMU>(m_MMU, m_Allocator);
+    gbl::Delete<PPU>(m_PPU, m_Allocator);
     gbl::Delete<CPU>(m_CPU, m_Allocator);
 
+
     m_MMU = gbl::New<MMU>(m_Allocator);
+    m_PPU = gbl::New<PPU>(m_Allocator);
     m_CPU = gbl::New<CPU>(m_Allocator);
 
+    m_MMU->LoadCartridge(cartridge);
+    m_MMU->LoadBIOS();
+    m_CPU->RunCartridge(m_MMU, m_PPU);
+
+    Run();
+
     return true;
+}
+
+void GameBoyEmulator::Run()
+{
+    while (1)
+    {
+        m_CPU->Tick(m_MMU);
+        m_PPU->Tick(m_CPU, m_MMU);
+
+        UpdateLCD();
+    }
+}
+
+void GameBoyEmulator::UpdateLCD()
+{
+    if (m_LCD)
+    {
+        for (int y = 0; y < PPU::BUFFER_HEIGHT; y++)
+        {
+            for (int x = 0; x < PPU::BUFFER_WIDTH; x++)
+            {
+                const auto color = m_PPU->GetFrameBuffer(x, y);
+                m_LCD->DrawPixel(x, y, color);
+            }
+        }
+    }
 }
 
 void GameBoyEmulator::Shutdown()
 {
     gbl::Delete<MMU>(m_MMU, m_Allocator);
+    gbl::Delete<PPU>(m_PPU, m_Allocator);
     gbl::Delete<CPU>(m_CPU, m_Allocator);
+}
+
+void GameBoyEmulator::SetLCD(ILCD* lcd)
+{
+    m_LCD = lcd;
 }
 
 } // namespace gbl

@@ -22,6 +22,12 @@
     <Filter Include="Sources\core\cpuop">
       <UniqueIdentifier>{160c8098-b3c1-43a9-966e-4077768c3942}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\debug">
+      <UniqueIdentifier>{cc8e2892-c85c-4a27-a4fb-a31f73f0eeb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\gbl\debug">
+      <UniqueIdentifier>{ca2702f0-9a0b-4f82-be9c-aeb3e5b44882}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\framework.h">
@@ -48,6 +54,18 @@
     <ClInclude Include="Headers\gbl\core\cpuop\cpuop.h">
       <Filter>Headers\gbl\core\cpuop</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\gbl\debug\debugger.h">
+      <Filter>Headers\gbl\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\core\ppu.h">
+      <Filter>Headers\gbl\core</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\cartridge.h">
+      <Filter>Headers\gbl</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\interface.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Headers\pch.cpp">
@@ -64,6 +82,15 @@
     </ClCompile>
     <ClCompile Include="Sources\core\cpuop\cpuop.cpp">
       <Filter>Sources\core\cpuop</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\debug\debugger.cpp">
+      <Filter>Sources\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\core\ppu.cpp">
+      <Filter>Sources\core</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\cartridge.cpp">
+      <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

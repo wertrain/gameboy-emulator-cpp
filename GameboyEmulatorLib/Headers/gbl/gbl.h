@@ -1,7 +1,10 @@
 #pragma once
 
 namespace gbl { class MMU; }
+namespace gbl { class PPU; }
 namespace gbl { class CPU; }
+namespace gbl { class Cartridge; }
+namespace gbl { class ILCD; }
 namespace gbl { class IGBLAllocator; }
 
 namespace gbl
@@ -15,13 +18,20 @@ public:
     ~GameBoyEmulator();
 
     bool Boot(const char* romFilePath);
-    bool BootFromMemory(void* rom, size_t romSize);
+    bool BootFromCartridge(const Cartridge* cartridge);
     void Shutdown();
+    void SetLCD(ILCD* lcd);
+
+private:
+    void Run();
+    void UpdateLCD();
 
 private:
     IGBLAllocator* m_Allocator;
     MMU* m_MMU;
+    PPU* m_PPU;
     CPU* m_CPU;
+    ILCD* m_LCD;
 };
 
 } // namespace gbl

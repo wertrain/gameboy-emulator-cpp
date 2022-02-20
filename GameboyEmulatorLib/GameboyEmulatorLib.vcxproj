@@ -21,18 +21,25 @@
   <ItemGroup>
     <ClInclude Include="Headers\framework.h" />
     <ClInclude Include="Headers\gbl\allocator.h" />
+    <ClInclude Include="Headers\gbl\cartridge.h" />
     <ClInclude Include="Headers\gbl\core\cpu.h" />
     <ClInclude Include="Headers\gbl\core\cpuop\cpuop.h" />
     <ClInclude Include="Headers\gbl\core\cpuop\cpuop_table.hxx" />
     <ClInclude Include="Headers\gbl\core\mmu.h" />
+    <ClInclude Include="Headers\gbl\core\ppu.h" />
+    <ClInclude Include="Headers\gbl\debug\debugger.h" />
     <ClInclude Include="Headers\gbl\gbl.h" />
+    <ClInclude Include="Headers\gbl\interface.h" />
     <ClInclude Include="Headers\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Headers\pch.cpp" />
+    <ClCompile Include="Sources\cartridge.cpp" />
     <ClCompile Include="Sources\core\cpu.cpp" />
     <ClCompile Include="Sources\core\cpuop\cpuop.cpp" />
     <ClCompile Include="Sources\core\mmu.cpp" />
+    <ClCompile Include="Sources\core\ppu.cpp" />
+    <ClCompile Include="Sources\debug\debugger.cpp" />
     <ClCompile Include="Sources\gbl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
