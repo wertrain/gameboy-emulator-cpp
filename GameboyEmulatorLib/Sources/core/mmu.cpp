@@ -3,7 +3,7 @@
 
 #include <memory>
 #include "gbl/allocator.h"
-#include "gbl/cartridge.h"
+#include "gbl/emulate/cartridge.h"
 #include "gbl/core/mmu.h"
 
 namespace

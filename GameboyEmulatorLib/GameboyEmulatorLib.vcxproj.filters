@@ -28,6 +28,12 @@
     <Filter Include="Headers\gbl\debug">
       <UniqueIdentifier>{ca2702f0-9a0b-4f82-be9c-aeb3e5b44882}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\gbl\emulate">
+      <UniqueIdentifier>{4f3941f4-b7d8-4e21-be6a-397499c24331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\emulate">
+      <UniqueIdentifier>{075cf143-558d-49f1-91ff-ddea756bb05b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\framework.h">
@@ -60,11 +66,14 @@
     <ClInclude Include="Headers\gbl\core\ppu.h">
       <Filter>Headers\gbl\core</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\gbl\cartridge.h">
-      <Filter>Headers\gbl</Filter>
+    <ClInclude Include="Headers\gbl\lcd.h">
+      <Filter>Headers\gbl\emulate</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\gbl\interface.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Headers\gbl\emulate\gameboy.h">
+      <Filter>Headers\gbl\emulate</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\emulate\cartridge.h">
+      <Filter>Headers\gbl\emulate</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -89,8 +98,11 @@
     <ClCompile Include="Sources\core\ppu.cpp">
       <Filter>Sources\core</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\cartridge.cpp">
-      <Filter>Sources</Filter>
+    <ClCompile Include="Sources\emulate\cartridge.cpp">
+      <Filter>Sources\emulate</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\emulate\gameboy.cpp">
+      <Filter>Sources\emulate</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

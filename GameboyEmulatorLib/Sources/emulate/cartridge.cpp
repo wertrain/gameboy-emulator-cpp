@@ -2,7 +2,7 @@
 #include "framework.h"
 
 #include "gbl/allocator.h"
-#include "gbl/cartridge.h"
+#include "gbl/emulate/cartridge.h"
 #include <fstream>
 #include <cstdint>
 #include <memory>
