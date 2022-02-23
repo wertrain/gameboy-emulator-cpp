@@ -22,6 +22,7 @@ public:
     void Shutdown();
     void SetLCD(ILCD* lcd);
     bool IsRunning() const;
+    void StopRunning();
 
 private:
     void Run();
@@ -34,6 +35,7 @@ private:
     CPU* m_CPU;
     ILCD* m_LCD;
     bool m_IsRunning;
+    bool m_IsProcessing;
 };
 
 } // namespace gbl

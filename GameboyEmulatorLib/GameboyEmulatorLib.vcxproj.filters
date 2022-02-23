@@ -66,14 +66,17 @@
     <ClInclude Include="Headers\gbl\core\ppu.h">
       <Filter>Headers\gbl\core</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\gbl\lcd.h">
-      <Filter>Headers\gbl\emulate</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\gbl\emulate\gameboy.h">
       <Filter>Headers\gbl\emulate</Filter>
     </ClInclude>
     <ClInclude Include="Headers\gbl\emulate\cartridge.h">
       <Filter>Headers\gbl\emulate</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\emulate\lcd.h">
+      <Filter>Headers\gbl\emulate</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gbl\core\cpuop\cpuop_cb_table.hxx">
+      <Filter>Headers\gbl\core\cpuop</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

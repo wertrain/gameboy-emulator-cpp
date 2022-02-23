@@ -29,8 +29,12 @@ public:
     OpFunc_t* GetOperator(uint8_t index);
     OpFunc_t* GetCbOperator(uint8_t index);
 
-#define OPERATE(MemberName, m, t, b) void MemberName(CPU* cpu, MMU* mmu);
+#define OPERATE(MemberIndex, m, t, b) void Op_##MemberIndex(CPU* cpu, MMU* mmu);
     #include "gbl/core/cpuop/cpuop_table.hxx"
+#undef OPERATE
+
+#define OPERATE(MemberIndex, m, t, b) void Op_Cb_##MemberIndex(CPU* cpu, MMU* mmu);
+    #include "gbl/core/cpuop/cpuop_cb_table.hxx"
 #undef OPERATE
 
 private:

@@ -59,7 +59,7 @@ bool Cartridge::Load(const char* filePath)
     m_Size = 0;
 
     m_Data = static_cast<uint8_t*>(m_Allocator->Allocate(romSize));
-    m_Size = romSize;
+    m_Size = static_cast<uint32_t>(romSize);
     memcpy(m_Data, data, m_Size);
 
     m_Allocator->Free(data);

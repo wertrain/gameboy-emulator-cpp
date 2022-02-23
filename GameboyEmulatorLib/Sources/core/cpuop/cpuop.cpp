@@ -23,9 +23,14 @@ CPUOperator::~CPUOperator()
 
 void CPUOperator::Initialize()
 {
-    int opTableIndex = 0x00;
-#define OPERATE(MemberName, m, t, b) m_OpTable[opTableIndex++] = { &CPUOperator::MemberName, m, t, b };
-    #include "gbl/core/cpuop/cpuop_table.hxx"
+#define OPERATE(MemberIndex, m, t, b) m_OpTable[0x##MemberIndex] = { &CPUOperator::##Op_##MemberIndex, m, t, b };
+#include "gbl/core/cpuop/cpuop_table.hxx"
+#undef OPERATE
+
+    // Op_cb ‚Ì‚İ“Áê
+
+#define OPERATE(MemberIndex, m, t, b) m_OpCbTable[0x##MemberIndex] = { &CPUOperator::##Op_Cb_##MemberIndex, m, t, b };
+#include "gbl/core/cpuop/cpuop_cb_table.hxx"
 #undef OPERATE
 }
 
@@ -1333,6 +1338,32 @@ void CPUOperator::Op_ca(CPU* cpu, MMU* mmu)
     cpu->InstructionJp(addr, CPU::Condition::Z, 0x02);
 }
 
+//-----------------------------------------------------------------------------
+
+void CPUOperator::Op_cb(CPU* cpu, MMU* mmu)
+{
+    // Fetch instruction
+    uint8_t op = mmu->ReadByte(cpu->m_CPU->registers.pc.word);
+    cpu->m_CPU->currentOp += op;
+
+    // Run instruction
+    OpFunc_t* opfunc_cb = &m_OpCbTable[op];
+    cpu->m_CPU->registers.pc.word++;
+    
+    if (!opfunc_cb || !opfunc_cb->function)
+    {
+        cpu->DebugOpcodeError();
+        return;
+    }
+
+    (this->*opfunc_cb->function)(cpu, mmu);
+    cpu->m_CPU->currentClock.m = opfunc_cb->m;
+    cpu->m_CPU->currentClock.t = opfunc_cb->t;
+    cpu->m_CPU->registers.pc.word += opfunc_cb->b;
+}
+
+//-----------------------------------------------------------------------------
+
 void CPUOperator::Op_cd(CPU* cpu, MMU* mmu)
 {
     uint16_t addr = mmu->ReadWord(cpu->m_CPU->registers.pc.word);
@@ -1546,6 +1577,1212 @@ void CPUOperator::Op_ff(CPU* cpu, MMU* mmu)
 {
     DebugInstruction(cpu, mmu, "RST 38h");
     cpu->InstructionCall(mmu, 0x0038, 0);
+}
+
+//-----------------------------------------------------------------------------
+
+void CPUOperator::Op_Cb_00(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC B");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_01(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC C");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_02(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC D");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_03(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC E");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_04(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC H");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_05(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC L");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_06(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionRlc(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_07(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RLC A");
+    cpu->InstructionRlc(&cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_08(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC B");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_09(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC C");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_0a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC D");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_0b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC E");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_0c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC H");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_0d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC L");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_0e(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionRrc(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_0f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RRC A");
+    cpu->InstructionRrc(&cpu->m_CPU->registers.af.hi);
+}
+
+// CB OP Codes
+
+void CPUOperator::Op_Cb_10(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL B");
+    cpu->InstructionRl(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_11(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL C");
+    cpu->InstructionRl(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_12(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL D");
+    cpu->InstructionRl(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_13(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL E");
+    cpu->InstructionRl(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_14(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL H");
+    cpu->InstructionRl(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_15(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL L");
+    cpu->InstructionRl(&cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_16(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionRl(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_17(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RL A");
+    cpu->InstructionRl(&cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_18(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR B");
+    cpu->InstructionRr(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_19(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR C");
+    cpu->InstructionRr(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_1a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR D");
+    cpu->InstructionRr(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_1b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR E");
+    cpu->InstructionRr(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_1c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR H");
+    cpu->InstructionRr(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_1d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR L");
+    cpu->InstructionRr(&cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_1e(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionRr(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_1f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RR A");
+    cpu->InstructionRr(&cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_20(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA B");
+    cpu->InstructionSla(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_21(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA C");
+    cpu->InstructionSla(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_22(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA D");
+    cpu->InstructionSla(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_23(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA E");
+    cpu->InstructionSla(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_24(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA H");
+    cpu->InstructionSla(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_25(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA L");
+    cpu->InstructionSla(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_26(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionSla(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_27(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SLA A");
+    cpu->InstructionSla(&cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_28(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA B");
+    cpu->InstructionSra(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_29(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA C");
+    cpu->InstructionSra(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_2a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA D");
+    cpu->InstructionSra(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_2b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA E");
+    cpu->InstructionSra(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_2c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA H");
+    cpu->InstructionSra(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_2d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA L");
+    cpu->InstructionSra(&cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_2e(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionSra(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_2f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRA A");
+    cpu->InstructionSra(&cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_30(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP B");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_31(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP C");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_32(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP D");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_33(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP E");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_34(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP H");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_35(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP L");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_36(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionSwap(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_37(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SWAP A");
+    cpu->InstructionSwap(&cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_38(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL B");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_39(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL C");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_3a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL D");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_3b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL E");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_3c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL H");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_3d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL L");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_3e(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL (HL)");
+    uint8_t v = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    cpu->InstructionSrl(&v);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, v);
+}
+
+void CPUOperator::Op_Cb_3f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "SRL A");
+    cpu->InstructionSrl(&cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_40(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, B");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_41(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, C");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_42(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, D");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_43(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, E");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_44(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, H");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_45(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, L");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_46(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 0, (HL)");
+    cpu->InstructionBit(0, value);
+}
+
+void CPUOperator::Op_Cb_47(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 0, A");
+    cpu->InstructionBit(0, cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_48(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, B");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_49(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, C");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_4a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, D");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_4b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, E");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_4c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, H");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_4d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, L");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_4e(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 1, (HL)");
+    cpu->InstructionBit(1, value);
+}
+
+void CPUOperator::Op_Cb_4f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 1, A");
+    cpu->InstructionBit(1, cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_50(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, B");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_51(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, C");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_52(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, D");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_53(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, E");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_54(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, H");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_55(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, L");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_56(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 2, (HL)");
+    cpu->InstructionBit(2, value);
+}
+
+void CPUOperator::Op_Cb_57(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 2, A");
+    cpu->InstructionBit(2, cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_58(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, B");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_59(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, C");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_5a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, D");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_5b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, E");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_5c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, H");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_5d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, L");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_5e(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 3, (HL)");
+    cpu->InstructionBit(3, value);
+}
+
+void CPUOperator::Op_Cb_5f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 3, A");
+    cpu->InstructionBit(3, cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_60(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, B");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_61(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, C");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_62(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, D");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_63(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, E");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_64(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, H");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_65(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, L");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_66(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 4, (HL)");
+    cpu->InstructionBit(4, value);
+}
+
+void CPUOperator::Op_Cb_67(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 4, A");
+    cpu->InstructionBit(4, cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_68(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, B");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_69(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, C");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_6a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, D");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_6b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, E");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_6c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, H");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_6d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, L");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_6e(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 5, (HL)");
+    cpu->InstructionBit(5, value);
+}
+
+void CPUOperator::Op_Cb_6f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 5, A");
+    cpu->InstructionBit(5, cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_70(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, B");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_71(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, C");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_72(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, D");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_73(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, E");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_74(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, H");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_75(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, L");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_76(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 6, (HL)");
+    cpu->InstructionBit(6, value);
+}
+
+void CPUOperator::Op_Cb_77(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 6, A");
+    cpu->InstructionBit(6, cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_78(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, B");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_79(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, C");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_7a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, D");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_7b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, E");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_7c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, H");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_7d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, L");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_7e(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "BIT 7, (HL)");
+    cpu->InstructionBit(7, value);
+}
+
+void CPUOperator::Op_Cb_7f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "BIT 7, A");
+    cpu->InstructionBit(7, cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_80(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, B");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_81(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, C");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_82(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, D");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_83(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, E");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_84(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, H");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_85(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, L");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_86(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 0, (HL)");
+    cpu->InstructionRes(0, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_87(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 0, A");
+    cpu->InstructionRes(0, &cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_88(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, B");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_89(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, C");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_8a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, D");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_8b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, E");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_8c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, H");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_8d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, L");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_8e(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 1, (HL)");
+    cpu->InstructionRes(1, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_8f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 1, A");
+    cpu->InstructionRes(1, &cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_90(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, B");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_91(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, C");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_92(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, D");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_93(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, E");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_94(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, H");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_95(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, L");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_96(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 2, (HL)");
+    cpu->InstructionRes(2, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_97(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 2, A");
+    cpu->InstructionRes(2, &cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_98(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, B");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_99(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, C");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_9a(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, D");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_9b(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, E");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_9c(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, H");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_9d(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, L");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_9e(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 3, (HL)");
+    cpu->InstructionRes(3, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_9f(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 3, A");
+    cpu->InstructionRes(3, &cpu->m_CPU->registers.af.hi);
+}
+
+
+void CPUOperator::Op_Cb_a0(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, B");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_a1(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, C");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_a2(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, D");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_a3(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, E");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_a4(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, H");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_a5(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, L");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_a6(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 4, (HL)");
+    cpu->InstructionRes(4, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_a7(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 4, A");
+    cpu->InstructionRes(4, &cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_a8(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, B");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_a9(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, C");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_aa(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, D");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_ab(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, E");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_ac(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, H");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_ad(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, L");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_ae(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 5, (HL)");
+    cpu->InstructionRes(5, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_af(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 5, A");
+    cpu->InstructionRes(5, &cpu->m_CPU->registers.af.hi);
+}
+
+
+
+void CPUOperator::Op_Cb_b0(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, B");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_b1(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, C");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_b2(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, D");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_b3(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, E");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_b4(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, H");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_b5(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, L");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_b6(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 6, (HL)");
+    cpu->InstructionRes(6, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_b7(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 6, A");
+    cpu->InstructionRes(6, &cpu->m_CPU->registers.af.hi);
+}
+
+void CPUOperator::Op_Cb_b8(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, B");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.bc.hi);
+}
+
+void CPUOperator::Op_Cb_b9(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, C");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.bc.lo);
+}
+
+void CPUOperator::Op_Cb_ba(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, D");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.de.hi);
+}
+
+void CPUOperator::Op_Cb_bb(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, E");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.de.lo);
+}
+
+void CPUOperator::Op_Cb_bc(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, H");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.hl.hi);
+}
+
+void CPUOperator::Op_Cb_bd(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, L");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.hl.lo);
+}
+
+void CPUOperator::Op_Cb_be(CPU* cpu, MMU* mmu)
+{
+    uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.hl.word);
+    DebugInstruction(cpu, mmu, "RES 7, (HL)");
+    cpu->InstructionRes(7, &value);
+    mmu->WriteByte(cpu->m_CPU->registers.hl.word, value);
+}
+
+void CPUOperator::Op_Cb_bf(CPU* cpu, MMU* mmu)
+{
+    DebugInstruction(cpu, mmu, "RES 7, A");
+    cpu->InstructionRes(7, &cpu->m_CPU->registers.af.hi);
 }
 
 //-----------------------------------------------------------------------------

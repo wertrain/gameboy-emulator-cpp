@@ -43,6 +43,7 @@ GameBoyEmulator::GameBoyEmulator(IGBLAllocator* allocator)
     , m_CPU(nullptr)
     , m_LCD(nullptr)
     , m_IsRunning(false)
+    , m_IsProcessing(false)
 {
 
 }
@@ -84,7 +85,7 @@ bool GameBoyEmulator::BootFromCartridge(const Cartridge* cartridge)
 
     m_MMU->LoadCartridge(cartridge);
     m_MMU->LoadBIOS();
-    m_CPU->RunCartridge(m_MMU, m_PPU);
+    //m_CPU->RunCartridge(m_MMU, m_PPU);
 
     Run();
 
@@ -96,6 +97,7 @@ bool GameBoyEmulator::BootFromCartridge(const Cartridge* cartridge)
 void GameBoyEmulator::Run()
 {
     m_IsRunning = true;
+    m_IsProcessing = true;
 
     while (m_IsRunning)
     {
@@ -104,6 +106,8 @@ void GameBoyEmulator::Run()
 
         UpdateLCD();
     }
+
+    m_IsProcessing = false;
 }
 
 void GameBoyEmulator::UpdateLCD()
@@ -131,7 +135,18 @@ void GameBoyEmulator::UpdateLCD()
 
 void GameBoyEmulator::Shutdown()
 {
-    m_IsRunning = false;
+    StopRunning();
+
+    constexpr uint32_t Timeout = 60;
+    uint32_t timeoutCount = 0;
+    while (m_IsProcessing)
+    {
+        if (++timeoutCount > Timeout)
+        {
+            break;
+        }
+    }
+
     gbl::Delete<MMU>(m_MMU, m_Allocator);
     gbl::Delete<PPU>(m_PPU, m_Allocator);
     gbl::Delete<CPU>(m_CPU, m_Allocator);
@@ -145,6 +160,11 @@ void GameBoyEmulator::SetLCD(ILCD* lcd)
 bool GameBoyEmulator::IsRunning() const
 {
     return m_IsRunning;
+}
+
+void GameBoyEmulator::StopRunning()
+{
+    m_IsRunning = false;
 }
 
 } // namespace gbl
