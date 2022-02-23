@@ -36,5 +36,6 @@ private:
     int32_t m_ClientWidth;
     int32_t m_ClientHeight;
     clock_t m_NowTime;
+    LPDWORD m_Pixels;
 };
 #endif // _WIN64
