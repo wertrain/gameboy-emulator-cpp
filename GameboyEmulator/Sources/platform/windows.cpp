@@ -73,9 +73,8 @@ bool Window::Create(const IWindow::CreateParameter* param)
         return false;
     }
 
-    int windowScale = 1;
     RECT windowRect;
-    SetRect(&windowRect, 0, 0, winParam->Width * windowScale, winParam->Height * windowScale);
+    SetRect(&windowRect, 0, 0, winParam->Width * winParam->Scale, winParam->Height * winParam->Scale);
     AdjustWindowRectEx(&windowRect, GetWindowLong(m_hWnd, GWL_STYLE), GetMenu(m_hWnd) != NULL, GetWindowLong(m_hWnd, GWL_EXSTYLE));
     const int nWidth = windowRect.right - windowRect.left;
     const int nHeight = windowRect.bottom - windowRect.top;

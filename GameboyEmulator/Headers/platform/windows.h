@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <ctime>
+#include <gbl/core/ppu.h>
 #include <gbl/emulate/lcd.h>
 #include "window.h"
 
@@ -13,7 +14,14 @@ public:
     {
         int Width;
         int Height;
+        int Scale;
         HINSTANCE hInstance;
+
+        CreateParameter()
+            : Width(gbl::PPU::BUFFER_WIDTH)
+            , Height(gbl::PPU::BUFFER_HEIGHT)
+            , Scale(3)
+            , hInstance(NULL) {}
     };
 
 public:

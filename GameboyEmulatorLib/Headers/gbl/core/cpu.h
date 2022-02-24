@@ -10,6 +10,9 @@ namespace gbl { class CPUOperator; }
 namespace gbl
 {
 
+/// <summary>
+/// CPU (Central Processing Unit) class
+/// </summary>
 class CPU
 {
 public:

@@ -27,8 +27,6 @@ int WINAPI WinMain(
     std::unique_ptr<Window> window(new Window);
 
     Window::CreateParameter param;
-    param.Width = gbl::LcdWidth;
-    param.Height = gbl::LcdHeight;
     param.hInstance = hInstance;
     window->Create(&param);
     window->Show();

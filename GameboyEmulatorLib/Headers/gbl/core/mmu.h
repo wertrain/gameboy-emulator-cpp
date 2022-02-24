@@ -8,6 +8,9 @@ namespace gbl { class Cartridge; }
 namespace gbl
 {
 
+/// <summary>
+/// MMU (Memory Management Unit) class
+/// </summary>
 class MMU
 {
 public:
