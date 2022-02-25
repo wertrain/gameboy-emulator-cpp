@@ -5,6 +5,7 @@
 #include "gbl/allocator.h"
 #include "gbl/emulate/cartridge.h"
 #include "gbl/core/mmu.h"
+#include <cassert>
 
 namespace
 {
@@ -133,7 +134,9 @@ uint8_t MMU::ReadByte(const uint16_t address)
         case 0xE00:
             if (address < 0xFEA0)
             {
-                return m_MMU->oam[address & 0xFF];
+                const uint8_t index = (address & 0xFF);
+                assert(index < sizeof(m_MMU->oam));
+                return m_MMU->oam[index];
             }
             else
             {
@@ -151,8 +154,11 @@ uint8_t MMU::ReadByte(const uint16_t address)
                 switch (address & 0x00F0)
                 {
                 case 0x00:
-                    return m_MMU->io[address & 0xFF];
-
+                {
+                    const uint8_t index = (address & 0xFF);
+                    assert(index < sizeof(m_MMU->io));
+                    return m_MMU->io[index];
+                }
                 // PPU
                 case 0x40: case 0x50: case 0x60: case 0x70:
                     return m_MMU->ppu[address - 0xFF40];
@@ -201,7 +207,7 @@ uint8_t MMU::WriteByte(const uint16_t address, const uint8_t data)
 
     switch ((address & 0xF000) >> 12)
     {
-        // ROM BANKS are read only
+    // ROM BANKS are read only
     case 0x0: case 0x1: case 0x2: case 0x3:
     case 0x4: case 0x5: case 0x6: case 0x7:
         return 0;
@@ -244,7 +250,9 @@ uint8_t MMU::WriteByte(const uint16_t address, const uint8_t data)
         case 0xE00:
             if (address < 0xFEA0)
             {
-                m_MMU->oam[address & 0xFF] = data;
+                const uint8_t index = (address & 0xFF);
+                assert(index < sizeof(m_MMU->oam));
+                m_MMU->oam[index] = data;
                 return 5;
             }
             else
@@ -264,8 +272,12 @@ uint8_t MMU::WriteByte(const uint16_t address, const uint8_t data)
                 switch (address & 0x00F0)
                 {
                 case 0x00:
-                    m_MMU->io[address & 0xFF] = data;
+                {
+                    const uint8_t index = (address & 0xFF);
+                    assert(index < sizeof(m_MMU->io));
+                    m_MMU->io[index] = data;
                     return 6;
+                }
 
                 // PPU
                 case 0x40: case 0x50: case 0x60: case 0x70:
