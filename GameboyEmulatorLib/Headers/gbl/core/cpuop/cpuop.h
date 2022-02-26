@@ -29,13 +29,13 @@ public:
     OpFunc_t* GetOperator(uint8_t index);
     OpFunc_t* GetCbOperator(uint8_t index);
 
-#define OPERATE(MemberIndex, m, t, b) void Op_##MemberIndex(CPU* cpu, MMU* mmu);
+#define OPCODE(address, mnemonic, length, cycles0, cycles1, group, flagZ, flagN, flagH, flagC, operand1, operand2, count) void Op_##address(CPU* cpu, MMU* mmu);
     #include "gbl/core/cpuop/cpuop_table.hxx"
-#undef OPERATE
+#undef OPCODE
 
-#define OPERATE(MemberIndex, m, t, b) void Op_Cb_##MemberIndex(CPU* cpu, MMU* mmu);
+#define OPCODE(address, mnemonic, length, cycles0, cycles1, group, flagZ, flagN, flagH, flagC, operand1, operand2, count) void OpCb_##address(CPU* cpu, MMU* mmu);
     #include "gbl/core/cpuop/cpuop_cb_table.hxx"
-#undef OPERATE
+#undef OPCODE
 
 private:
     void DebugOpcodeError(CPU* cpu);
@@ -44,8 +44,8 @@ private:
 
 private:
     IGBLAllocator* m_Allocator;
-    OpFunc_t m_OpTable[0xFF];
-    OpFunc_t m_OpCbTable[0xFF];
+    OpFunc_t m_OpTable[0xFF + 1];
+    OpFunc_t m_OpCbTable[0xFF + 1];
 
     friend class CPU;
 };
