@@ -2795,7 +2795,22 @@ void CPUOperator::Op_0xdc(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
 void CPUOperator::Op_0xde(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
 void CPUOperator::Op_0xee(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
 void CPUOperator::Op_0xf6(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
-void CPUOperator::Op_0xf8(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
+void CPUOperator::Op_0xf8(CPU* cpu, MMU* mmu)
+{
+    const uint8_t value = mmu->ReadByte(cpu->m_CPU->registers.pc.word);
+    const uint16_t reg = cpu->m_CPU->registers.sp.word;
+
+    DebugInstruction(cpu, mmu, "LD (HL)");
+
+    uint16_t result = static_cast<uint16_t>(reg + value);
+
+    cpu->FlagSetZero(false);
+    cpu->FlagSetSub(false);
+    cpu->FlagSetHalfcarry(((reg ^ value ^ (result & 0xFFFF)) & 0x10) == 0x10);
+    cpu->FlagSetCarry(((reg ^ value ^ (result & 0xFFFF)) & 0x100) == 0x100);
+
+    cpu->m_CPU->registers.hl.word = result;
+}
 void CPUOperator::Op_0xf9(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
 void CPUOperator::OpCb_0xc0(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
 void CPUOperator::OpCb_0xc1(CPU* cpu, MMU* mmu) { DebugOpcodeError(cpu); }
